@@ -1,29 +1,27 @@
 import paramiko
 
-def reset_device(ip_address):
-    print(f"Resetting device at IP address: {ip_address}")
-    try:
-        # Create a new SSH client
-        ssh_client = paramiko.SSHClient()
-        # Automatically add the host key (don't use in production)
-        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        # Connect to the device
-        ssh_client.connect(ip_address, username='admin', password='x^UftfyJYbb`zk6h')
-        # Open a channel for sending CLI commands
-        cli_channel = ssh_client.invoke_shell()
-        # Send the necessary CLI commands to reset the device
-        cli_channel.send('config reset\n')
-        cli_channel.send('reboot\n')
-        # Close the CLI channel
-        cli_channel.close()
-        # Close the SSH connection
-        ssh_client.close()
-        print("Device reset successfully")
-    except Exception as e:
-        print(f"Error resetting device: {e}")
+# Define the SSH parameters
+host = '169.254.1.1'
+port = 22
+username = 'admin'
+password = '=;.9cTgm;:R\\T9x\\'
 
-# Example usage
-ip_addresses = ['169.254.1.1']
+# Define the commands to reset the RF device
+reset_commands = [
+    'config reset',
+    'reboot'
+]
 
-for ip_address in ip_addresses:
-    reset_device(ip_address)
+# Create an SSH client and connect to the remote server
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(host, port, username, password)
+
+# Execute the reset commands
+for cmd in reset_commands:
+    stdin, stdout, stderr = ssh.exec_command(cmd)
+    # Wait for the command to complete
+    stdout.channel.recv_exit_status()
+
+# Close the SSH connection
+ssh.close()
